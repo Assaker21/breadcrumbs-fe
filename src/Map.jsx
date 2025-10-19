@@ -39,12 +39,12 @@ export default function Map({ passcode }) {
       return {
         latitude: point.latitude,
         longitude: point.longitude,
-        createdat: point.createdat,
+        createdAt: point.createdAt,
         label: (
           <>
             hdop: {point.hdop}
             <br />
-            {`${formatLocalDate(new Date(point.createdat))}`}
+            {`${formatLocalDate(new Date(point.createdAt))}`}
             <br />
           </>
         ),
@@ -61,7 +61,7 @@ export default function Map({ passcode }) {
           <span className="flex-grow leading-5">
             Last signal at:{" "}
             {formatLocalDate(
-              filteredPoints?.[filteredPoints.length - 1]?.createdat
+              filteredPoints?.[filteredPoints.length - 1]?.createdAt
             )}
           </span>
         ) : null}

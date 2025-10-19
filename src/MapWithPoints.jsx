@@ -3,7 +3,14 @@ import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import { useEffect } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import {
+  CircleMarker,
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
 function FitBounds({ points }) {
@@ -24,6 +31,9 @@ export default function MapWithPoints({
   defaultCenter = [0, 0],
   defaultZoom = 2,
 }) {
+  const times = points.map((p) => new Date(p.createdAt).getTime());
+  const maxTime = Math.max(...times); // newest
+  const minTime = Math.min(...times);
   return (
     <div className="w-full h-[calc(100%-60px)] rounded-2xl overflow-hidden">
       <MapContainer
@@ -37,24 +47,39 @@ export default function MapWithPoints({
         />
 
         {autoFit && <FitBounds points={points} />}
-
         {points.map((p, i) => (
-          <Marker
+          <CircleMarker
             key={p.id ?? i}
-            position={[p.latitude, p.longitude]}
-            icon={L.icon({
-              iconUrl: "/marker.png",
-              iconSize: [32, 32],
-              iconAnchor: [16, 32],
-            })}
+            center={[p.latitude, p.longitude]}
+            radius={10}
+            pathOptions={{
+              color: "black",
+              fillColor: getColor(p.createdAt, minTime, maxTime),
+              fillOpacity: 1,
+            }}
           >
             <Popup>
               {p.label ??
                 `Lat: ${p.latitude.toFixed(5)}, Lng: ${p.longitude.toFixed(5)}`}
             </Popup>
-          </Marker>
+          </CircleMarker>
         ))}
       </MapContainer>
     </div>
   );
 }
+
+const getColor = (createdAt, minTime, maxTime) => {
+  const t = new Date(createdAt).getTime();
+
+  // Normalize (0 = oldest, 1 = newest)
+  let ratio = 0;
+  if (maxTime !== minTime) {
+    ratio = (t - minTime) / (maxTime - minTime);
+  }
+  // ratio 0 => red (255,0,0)
+  // ratio 1 => green (0,255,0)
+  const r = Math.round(255 * (1 - ratio));
+  const g = Math.round(255 * ratio);
+  return `rgb(${r},${g},0)`;
+};
