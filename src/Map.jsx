@@ -16,17 +16,25 @@ function formatLocalDate(dateString) {
 
 export default function Map({ passcode }) {
   const [points, setPoints] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   async function getData() {
-    const response = await fetch(import.meta.env.VITE_BACKEND + "/crumbs", {
-      headers: {
-        "api-key": passcode,
-      },
-    });
+    setLoading(true);
+    try {
+      const response = await fetch(import.meta.env.VITE_BACKEND + "/crumbs", {
+        headers: {
+          "api-key": passcode,
+        },
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    setPoints(data);
+      setPoints(data);
+    } catch (err) {
+      console.error(err);
+    }
+
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -57,14 +65,25 @@ export default function Map({ passcode }) {
         <h1 className="text-4xl font-bold tracking-tighter w-full mb-4">
           Breadcrumbs
         </h1>
-        {filteredPoints.length ? (
-          <span className="flex-grow leading-5">
-            Last signal at:{" "}
-            {formatLocalDate(
-              filteredPoints?.[filteredPoints.length - 1]?.createdAt
-            )}
-          </span>
-        ) : null}
+        <div className="flex flex-row items-center justify-between flex-grow gap-2">
+          <button
+            disabled={loading}
+            onClick={() => {
+              getData();
+            }}
+            className="disabled:bg-gray-500 bg-green-700 text-white font-medium rounded-xl px-3 py-2.5 w-full text-lg hover:ring-1 hover:ring-black cursor-pointer focus:ring-2 focus:ring-black"
+          >
+            {loading ? "Loading..." : "Refresh"}
+          </button>
+          {filteredPoints.length ? (
+            <span className="leading-5">
+              Last signal at:{" "}
+              {formatLocalDate(
+                filteredPoints?.[filteredPoints.length - 1]?.createdAt
+              )}
+            </span>
+          ) : null}
+        </div>
       </div>
       <MapWithPoints points={filteredPoints} />
     </div>
