@@ -18,7 +18,7 @@ export default function Map({ passcode }) {
   const [points, setPoints] = useState([]);
 
   async function getData() {
-    const response = await fetch("http://localhost:3000/crumbs", {
+    const response = await fetch(import.meta.env.VITE_BACKEND + "/crumbs", {
       headers: {
         "api-key": passcode,
       },
